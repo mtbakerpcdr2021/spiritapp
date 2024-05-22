@@ -1,0 +1,62 @@
+import requests
+import tkinter as tk
+from tkinter import scrolledtext, Label
+
+def get_volunteer_opportunities(zip_code):
+    api_endpoint = f'https://www.volunteerconnector.org/api/search/?postalcode={zip_code}'
+    response = requests.get(api_endpoint)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
+def display_opportunities():
+    zip_code = entry_zip.get()
+    opportunities = get_volunteer_opportunities(zip_code)
+    text_area.delete('1.0', tk.END)  # Clear the text area before displaying new results
+    if opportunities and opportunities['results']:
+        text_area.insert(tk.INSERT, f"Volunteer opportunities near {zip_code}:\n\n")
+        for idx, opportunity in enumerate(opportunities['results'], 1):
+            org_name = opportunity['organization']['name']
+            text = f"{idx}. {opportunity['title']} by {org_name}\n"
+            text += f"   Description: {opportunity['description']}\n"
+            text += f"   More info: {opportunity['url']}\n"
+            if opportunity['remote_or_online']:
+                text += "   This opportunity is available online.\n"
+            else:
+                text += "   This opportunity is in-person.\n"
+            text += "-" * 60 + "\n"  # Add a separator line
+            text_area.insert(tk.INSERT, text)
+    else:
+        text_area.insert(tk.INSERT, "No opportunities found.\n")
+
+# Setup the GUI
+root = tk.Tk()
+root.title("Volunteer Opportunities Finder")
+
+# Create the main frame
+frame = tk.Frame(root)
+frame.pack(padx=10, pady=10)
+
+# Label for zip code entry
+label_zip = Label(frame, text="Input zip code:")
+label_zip.pack(side=tk.TOP, padx=5, pady=0)
+
+# Entry for zip code
+entry_zip = tk.Entry(frame, width=50)
+entry_zip.pack(side=tk.TOP, padx=5, pady=5)
+
+# Button to search for opportunities
+search_button = tk.Button(frame, text="Search", command=display_opportunities)
+search_button.pack(side=tk.TOP, padx=5, pady=5)
+
+# Label for results area
+label_results = Label(frame, text="Local Volunteer Opportunities:")
+label_results.pack(side=tk.TOP, padx=5, pady=0)
+
+# Text area to display the results
+text_area = scrolledtext.ScrolledText(frame, width=60, height=20)
+text_area.pack(side=tk.TOP, padx=5, pady=5)
+
+# Run the application
+root.mainloop()
