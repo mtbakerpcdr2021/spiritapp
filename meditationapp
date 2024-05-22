@@ -1,0 +1,138 @@
+import tkinter as tk
+from tkinter import messagebox, scrolledtext, Toplevel
+import time
+import threading
+import pygame
+
+# Initialize Pygame for playing sound
+pygame.init()
+pygame.mixer.init()
+
+def play_sound():
+    # Load a sound (you need to have a .wav file named 'chime.wav' in the same directory as the script)
+    sound = pygame.mixer.Sound('chime.wav')
+    sound.play()
+
+def start_timer(minutes, update_label):
+    # Convert minutes to seconds
+    seconds = minutes * 60
+    while seconds > 0:
+        time.sleep(1)
+        minutes, seconds_left = divmod(seconds, 60)
+        update_label(f"{minutes:02}:{seconds_left:02}")
+        seconds -= 1
+    update_label("00:00")
+    play_sound()
+    messagebox.showinfo("Time's Up!", "Your meditation session has ended.")
+    reset_app()
+
+def reset_app():
+    app.reset()
+
+class MeditationApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Meditation Timer")
+        self.geometry("300x300")  # Increased height to accommodate new button
+
+        self.label = tk.Label(self, text="Enter time in minutes:")
+        self.label.pack(pady=10)
+
+        self.entry = tk.Entry(self)
+        self.entry.pack(pady=10)
+
+        self.start_button = tk.Button(self, text="Start Meditation", command=self.start_meditation)
+        self.start_button.pack(pady=10)
+
+        self.guide_button = tk.Button(self, text="Meditation Guide", command=self.show_guide)
+        self.guide_button.pack(pady=10)
+
+        self.timer_label = tk.Label(self, text="00:00", font=("Helvetica", 16))
+        self.timer_label.pack(pady=20)
+
+    def start_meditation(self):
+        try:
+            minutes = int(self.entry.get())
+            self.entry.config(state='disabled')
+            self.start_button.config(state='disabled')
+            self.guide_button.config(state='disabled')
+            t = threading.Thread(target=start_timer, args=(minutes, self.update_timer_label))
+            t.start()
+        except ValueError:
+            messagebox.showerror("Invalid Input", "Please enter a valid number of minutes.")
+            self.entry.config(state='normal')
+            self.start_button.config(state='normal')
+            self.guide_button.config(state='normal')
+
+    def update_timer_label(self, time_str):
+        self.timer_label.config(text=time_str)
+
+    def reset(self):
+        self.entry.config(state='normal')
+        self.start_button.config(state='normal')
+        self.guide_button.config(state='normal')
+        self.timer_label.config(text="00:00")
+
+    def show_guide(self):
+        guide_window = Toplevel(self)
+        guide_window.title("Meditation Guide")
+        guide_window.geometry("500x400")
+        text = scrolledtext.ScrolledText(guide_window, wrap=tk.WORD, font=("Helvetica", 10))
+        text.insert(tk.END, "Meditation is a practice that has been used for centuries to cultivate mindfulness, "
+                            "inner peace, and a deeper understanding of the mind and body connection. This guide will "
+                            "explore the basics of meditation, including how to get started, different techniques, and the "
+                            "benefits you can expect from regular practice.\n\n"
+                            "Getting Started with Meditation\n"
+                            "1. Choose Your Space:\n"
+                            "To begin meditating, find a quiet, comfortable space where you won't be disturbed. This "
+                            "could be a corner of your bedroom, a dedicated meditation room, or even a quiet spot in nature. "
+                            "The key is to have a space that feels serene and allows you to focus without interruptions.\n\n"
+                            "2. Set a Time Limit:\n"
+                            "When starting out, it's helpful to choose a short time, such as five or ten minutes. As you "
+                            "become more comfortable with meditation, you can gradually increase the duration. Using a "
+                            "timer can help you stay focused on the meditation and not on the clock.\n\n"
+                            "3. Get Comfortable:\n"
+                            "Sit in a comfortable position. You can sit on a chair with your feet flat on the floor, on a "
+                            "cushion crossed-legged, or kneel in a seiza position. The important thing is to keep your back "
+                            "straight, which helps with maintaining alertness during your practice.\n\n"
+                            "Basic Meditation Techniques\n"
+                            "1. Mindfulness Meditation:\n"
+                            "This form of meditation involves paying attention to your breath as it goes in and out, and "
+                            "noticing when your mind wanders from this task. The practice is not to clear the mind, but to "
+                            "notice what appears and to gently bring the attention back to the breath whenever you realize "
+                            "the mind has wandered.\n\n"
+                            "2. Focused Attention Meditation:\n"
+                            "Focused attention meditation is all about concentrating on a single point. This could involve "
+                            "focusing on the breath, on a particular word or mantra, listening to a repetitive gong, or "
+                            "counting beads on a mala. Whenever you notice your mind wandering, return your focus back to the "
+                            "chosen object of attention.\n\n"
+                            "3. Body Scan Meditation:\n"
+                            "In this type of meditation, focus your attention on different parts of your body. Start at your "
+                            "feet and work your way up to your head, noticing any discomfort, tension, or relaxation. This "
+                            "practice helps in developing a mindful awareness of bodily sensations and can be very relaxing.\n\n"
+                            "4. Loving-kindness Meditation (Metta):\n"
+                            "Loving-kindness meditation is the practice of directing well-wishes towards others and oneself. "
+                            "It typically involves opening the mind to receiving loving kindness and then sending wishes of "
+                            "love, happiness, and wellbeing to others.\n\n"
+                            "Benefits of Meditation\n"
+                            "Regular meditation offers numerous health benefits, including:\n"
+                            "1. Reduced Stress:\n"
+                            "Meditation is known for its effectiveness in reducing stress. It works by impacting the body's "
+                            "stress response, reducing the production of stress hormones such as cortisol.\n\n"
+                            "2. Improved Concentration:\n"
+                            "Practices like focused attention meditation can enhance the strength and endurance of your "
+                            "attention, helping you focus better in daily activities.\n\n"
+                            "3. Enhanced Emotional Health:\n"
+                            "Meditation can lead to an improved self-image and a more positive outlook on life. Mindfulness "
+                            "meditation, in particular, has been shown to reduce symptoms of depression and anxiety.\n\n"
+                            "4. Better Sleep:\n"
+                            "By promoting overall relaxation, meditation can help you achieve a state of calm that can lead to "
+                            "improved sleep patterns.\n\n"
+                            "5. Greater Self-Awareness:\n"
+                            "Meditation encourages you to slow down, allows for greater introspection, and can help you become "
+                            "more aware of yourself and your surroundings.")
+        text.config(state=tk.DISABLED)
+        text.pack(fill=tk.BOTH, expand=True)
+
+app = MeditationApp()
+app.mainloop()
